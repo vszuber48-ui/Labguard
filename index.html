@@ -1,0 +1,785 @@
+<title>LabGuard</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #F5F7F6;
+    --surface: #FFFFFF;
+    --surface-2: #EAF0EE;
+    --ink: #12201C;
+    --ink-2: #48564F;
+    --muted: #8B9791;
+    --border: rgba(18,32,28,0.12);
+    --border-soft: rgba(18,32,28,0.07);
+    --accent: #0F6E63;
+    --accent-strong: #0B4F47;
+    --accent-soft: #E1F0EC;
+    --accent-ink: #05332C;
+    --good: #0ca30c;
+    --warning: #b5790a;
+    --serious: #c9522e;
+    --critical: #d03b3b;
+    --good-soft: #E4F5E1;
+    --warning-soft: #FBF0DA;
+    --serious-soft: #FBE5DD;
+    --critical-soft: #FBE1E1;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0D1311;
+      --surface: #151D1A;
+      --surface-2: #1C2622;
+      --ink: #F1F5F3;
+      --ink-2: #C4CFC9;
+      --muted: #7E8B85;
+      --border: rgba(255,255,255,0.12);
+      --border-soft: rgba(255,255,255,0.07);
+      --accent: #3FBBA8;
+      --accent-strong: #6FD4C4;
+      --accent-soft: #163C36;
+      --accent-ink: #BEEEE4;
+      --good-soft: #123317;
+      --warning-soft: #3A2C0E;
+      --serious-soft: #3B2013;
+      --critical-soft: #3B1616;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0D1311;
+    --surface: #151D1A;
+    --surface-2: #1C2622;
+    --ink: #F1F5F3;
+    --ink-2: #C4CFC9;
+    --muted: #7E8B85;
+    --border: rgba(255,255,255,0.12);
+    --border-soft: rgba(255,255,255,0.07);
+    --accent: #3FBBA8;
+    --accent-strong: #6FD4C4;
+    --accent-soft: #163C36;
+    --accent-ink: #BEEEE4;
+    --good-soft: #123317;
+    --warning-soft: #3A2C0E;
+    --serious-soft: #3B2013;
+    --critical-soft: #3B1616;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    padding: 32px 16px 64px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  header.app-head { margin-bottom: 28px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 38px);
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .lede {
+    color: var(--ink-2);
+    max-width: 62ch;
+    font-size: 15.5px;
+    margin: 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+
+  .input-card { margin-top: 22px; }
+  .input-card h2, .results h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 14px;
+    font-weight: 600;
+  }
+  textarea#csvInput {
+    width: 100%;
+    min-height: 130px;
+    resize: vertical;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+  .spacer { flex: 1 1 auto; }
+
+  button {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  button.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  button.ghost { background: transparent; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  label.file-btn {
+    font-size: 13px;
+    color: var(--ink-2);
+    border: 1px dashed var(--border);
+    border-radius: 9px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+  label.file-btn:hover { border-color: var(--accent); color: var(--accent); }
+  input[type="file"] { display: none; }
+
+  .hint { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+
+  .results { margin-top: 30px; }
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .tile .num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .tile .label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .tile.good .num { color: var(--good); }
+  .tile.warning .num { color: var(--warning); }
+  .tile.critical .num { color: var(--critical); }
+  .tile.accent .num { color: var(--accent); }
+
+  .section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 600;
+    margin: 26px 0 10px;
+  }
+
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border-soft); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; background: var(--surface); }
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* Keep short, token-like columns tight so the one prose column (why it's
+     flagged) gets the width it needs instead of being squeezed into many
+     wrapped lines while short cells sit on mostly-empty rows. */
+  #issuesTable th:nth-child(1), #issuesTable td:nth-child(1),
+  #issuesTable th:nth-child(3), #issuesTable td:nth-child(3),
+  #issuesTable th:nth-child(4), #issuesTable td:nth-child(4) { white-space: nowrap; }
+  #issuesTable th:nth-child(2), #issuesTable td:nth-child(2) { white-space: nowrap; }
+  #issuesTable th:nth-child(5), #issuesTable td:nth-child(5) { min-width: 280px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .chip.critical { background: var(--critical-soft); color: var(--critical); }
+  .chip.serious  { background: var(--serious-soft);  color: var(--serious); }
+  .chip.warning  { background: var(--warning-soft);  color: var(--warning); }
+  .chip.info     { background: var(--surface-2); color: var(--ink-2); }
+  .chip::before { content: "●"; font-size: 8px; }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px 20px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    font-size: 13.5px;
+  }
+
+  details.methodology summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-2);
+    font-weight: 600;
+    padding: 4px 0;
+  }
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px 20px;
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .ref-grid .field { font-family: var(--mono); color: var(--ink); }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .copy-flash { color: var(--good); font-size: 12.5px; margin-left: 8px; }
+
+  @media (max-width: 520px) {
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="wrap">
+  <header class="app-head">
+    <p class="eyebrow">Lab &amp; clinical data QA</p>
+    <h1>LabGuard</h1>
+    <p class="lede">Paste or upload a lab/clinical results export and LabGuard cleans it — duplicates, formatting, missing values — then checks every measurement against published physiological reference ranges to flag values that are more likely a transcription or unit error than a real result.</p>
+  </header>
+
+  <section class="card input-card">
+    <h2>1. Bring your data</h2>
+    <textarea id="csvInput" placeholder="patient_id,age,sex,glucose_mg_dl,hemoglobin_g_dl,systolic_bp,diastolic_bp,heart_rate,temp_c,test_date&#10;P001,54,Male,92,14.1,118,76,72,36.8,2026-03-01"></textarea>
+    <div class="row">
+      <label class="file-btn">Upload CSV
+        <input id="fileInput" type="file" accept=".csv,text/csv" />
+      </label>
+      <button id="sampleBtn" class="ghost" type="button">Load sample data</button>
+      <span class="spacer"></span>
+      <button id="analyzeBtn" class="primary" type="button">Analyze</button>
+    </div>
+    <p class="hint">Nothing you paste or upload leaves this browser tab — all parsing and checks run client-side. Sample data is synthetic and clearly marked, never real patient records.</p>
+  </section>
+
+  <section class="results">
+    <div id="emptyState" class="empty">Load the sample data or bring your own CSV, then click Analyze.</div>
+    <div id="resultsBody" hidden>
+
+      <div class="tiles" id="tiles"></div>
+
+      <div class="section-title">Flagged issues</div>
+      <div class="table-scroll">
+        <table id="issuesTable">
+          <thead>
+            <tr><th>Row</th><th>Field</th><th class="mono">Value</th><th>Severity</th><th>Why it's flagged</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="section-title" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <span>Cleaned data preview</span>
+        <span>
+          <button id="copyBtn" class="ghost" type="button" style="font-size:12.5px; padding:6px 12px;">Copy cleaned CSV</button><span id="copyFlash" class="copy-flash" hidden>Copied</span>
+        </span>
+      </div>
+      <div class="table-scroll">
+        <table id="cleanTable"><thead></thead><tbody></tbody></table>
+      </div>
+      <p class="hint" id="cleanNote"></p>
+
+      <details class="methodology">
+        <summary>Reference ranges &amp; method used</summary>
+        <p class="hint" style="margin-top:10px;">Values are checked against a physiologically <em>plausible</em> band (not the narrower "normal" band) — a genuinely sick patient can have an abnormal-but-real result, so LabGuard only flags values a human body could not plausibly produce, which is a strong signal of a unit mix-up, decimal slip, or transcription error rather than a clinical finding. This is a data-quality check, not a diagnosis.</p>
+        <div class="ref-grid" id="refGrid"></div>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    LabGuard is a data-quality demo tool built to show reference-range-aware cleaning for lab/clinical exports. It does not store, transmit, or interpret real patient data, and nothing here is medical advice.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var FIELD_DEFS = {
+    age: {
+      aliases: ["age", "ageyears", "patientage"],
+      unit: "years", plausibleLow: 0, plausibleHigh: 122, normalNote: "0–122 yrs (oldest verified human lifespan)",
+      check: function (v) {
+        if (v < 0) return { severity: "critical", why: "Negative age is not possible — likely a sign error or bad subtraction when age was calculated from a birth date." };
+        if (v > 122) return { severity: "critical", why: "Exceeds the oldest verified human lifespan (122 yrs) — likely a data-entry or unit error." };
+        return null;
+      }
+    },
+    glucose: {
+      aliases: ["glucose", "glucosemgdl", "fastingglucose", "fbs", "bloodglucose", "glucosemmoll"],
+      unit: "mg/dL", normalNote: "70–100 mg/dL fasting (plausible: 20–600)",
+      check: function (v) {
+        if (v >= 2.5 && v <= 8.5) return { severity: "serious", why: "Value sits in the mmol/L range (≈2.5–8.5), not mg/dL. Likely recorded in mmol/L and needs ×18 conversion (mmol/L × 18.0 ≈ mg/dL)." };
+        if (v < 20 || v > 600) return { severity: "critical", why: "Outside the physiologically plausible range for blood glucose (20–600 mg/dL) even accounting for severe hypo-/hyperglycemia." };
+        return null;
+      }
+    },
+    hemoglobin: {
+      aliases: ["hemoglobin", "haemoglobin", "hb", "hgb"],
+      unit: "g/dL", normalNote: "12.0–17.5 g/dL (plausible: 2–24)",
+      check: function (v) {
+        if (v < 2 || v > 24) return { severity: "critical", why: "Outside the plausible range for hemoglobin (2–24 g/dL) — likely a decimal-place or unit error." };
+        return null;
+      }
+    },
+    systolic: {
+      aliases: ["systolic", "systolicbp", "sbp", "bpsystolic", "bloodpressuresystolic"],
+      unit: "mmHg", normalNote: "90–120 mmHg (plausible: 40–300)",
+      check: function (v) {
+        if (v < 40 || v > 300) return { severity: "critical", why: "Outside the range compatible with a living patient (40–300 mmHg systolic) — likely a missing/extra digit." };
+        return null;
+      }
+    },
+    diastolic: {
+      aliases: ["diastolic", "diastolicbp", "dbp", "bpdiastolic", "bloodpressurediastolic"],
+      unit: "mmHg", normalNote: "60–80 mmHg (plausible: 20–200)",
+      check: function (v) {
+        if (v < 20 || v > 200) return { severity: "critical", why: "Outside the plausible diastolic range (20–200 mmHg) — likely a transcription error." };
+        return null;
+      }
+    },
+    heartrate: {
+      aliases: ["heartrate", "hr", "pulse", "pulserate"],
+      unit: "bpm", normalNote: "60–100 bpm resting (plausible: 20–250)",
+      check: function (v) {
+        if (v < 20 || v > 250) return { severity: "critical", why: "Outside the plausible resting/exertion heart-rate range (20–250 bpm)." };
+        return null;
+      }
+    },
+    temp_c: {
+      aliases: ["tempc", "temperaturec", "temp", "temperature", "bodytemp"],
+      unit: "°C", normalNote: "36.1–37.5°C (plausible: 30–43)",
+      check: function (v) {
+        if (v >= 90 && v <= 108) return { severity: "serious", why: "Reads like a Fahrenheit value (≈90–108) stored in a Celsius field — likely unit mix-up (°F to °C: subtract 32, ×5/9)." };
+        if (v < 30 || v > 43) return { severity: "critical", why: "Outside the plausible human body-temperature range in °C (30–43)." };
+        return null;
+      }
+    },
+    bmi: {
+      aliases: ["bmi", "bodymassindex"],
+      unit: "kg/m²", normalNote: "18.5–24.9 (plausible: 8–80)",
+      check: function (v) {
+        if (v < 8 || v > 80) return { severity: "critical", why: "Outside the plausible BMI range (8–80) — likely a height/weight unit mismatch (e.g. height in cm entered as m)." };
+        return null;
+      }
+    },
+    wbc: {
+      aliases: ["wbc", "whitebloodcell", "whitebloodcellcount", "wbccount"],
+      unit: "/µL", normalNote: "4,000–11,000 /µL (plausible: 200–50,000)",
+      check: function (v) {
+        if (v < 200 || v > 50000) return { severity: "critical", why: "Outside the plausible WBC count range — check whether the value was entered in ×10⁹/L instead of /µL (they're numerically equal, so this usually signals a decimal or magnitude slip instead)." };
+        return null;
+      }
+    },
+    platelets: {
+      aliases: ["platelets", "platelet", "plt", "plateletcount"],
+      unit: "/µL", normalNote: "150,000–450,000 /µL (plausible: 5,000–1,500,000)",
+      check: function (v) {
+        if (v < 5000 || v > 1500000) return { severity: "critical", why: "Outside the plausible platelet count range — likely a missing or extra zero." };
+        return null;
+      }
+    }
+  };
+
+  var SEX_MAP = {
+    "m": "M", "male": "M", "man": "M",
+    "f": "F", "female": "F", "woman": "F"
+  };
+
+  function parseCSV(text) {
+    // Small RFC4180-style parser: quoted fields, embedded commas/newlines/escaped quotes.
+    var rows = [];
+    var field = "", row = [], inQuotes = false;
+    var i = 0, len = text.length;
+    while (i < len) {
+      var c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += c; i++; continue;
+      }
+      if (c === '"') { inQuotes = true; i++; continue; }
+      if (c === ",") { row.push(field); field = ""; i++; continue; }
+      if (c === "\r") { i++; continue; }
+      if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+      field += c; i++;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    rows = rows.filter(function (r) { return !(r.length === 1 && r[0] === ""); });
+    if (!rows.length) return { fields: [], data: [] };
+    var headers = rows[0].map(function (h) { return h.trim(); });
+    var data = rows.slice(1).map(function (r) {
+      var obj = {};
+      headers.forEach(function (h, idx) { obj[h] = r[idx] !== undefined ? r[idx] : ""; });
+      return obj;
+    });
+    return { fields: headers, data: data };
+  }
+
+  function csvEscape(v) {
+    var s = v === undefined || v === null ? "" : String(v);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function toCSV(headers, rows) {
+    var lines = [headers.map(csvEscape).join(",")];
+    rows.forEach(function (r) {
+      lines.push(headers.map(function (h) { return csvEscape(r[h]); }).join(","));
+    });
+    return lines.join("\n");
+  }
+
+  function normHeader(h) {
+    return String(h || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function matchFields(headers) {
+    var map = {}; // fieldKey -> original header
+    var normed = headers.map(normHeader);
+    Object.keys(FIELD_DEFS).forEach(function (key) {
+      var def = FIELD_DEFS[key];
+      // Pass 1: exact match on the whole normalized header (safest).
+      for (var i = 0; i < normed.length; i++) {
+        if (def.aliases.indexOf(normed[i]) !== -1) { map[key] = headers[i]; break; }
+      }
+      // Pass 2: substring match, but only using longer aliases (>=5 chars) so a
+      // real-world header like "hemoglobin_g_dl" or "fasting_glucose_mgdl"
+      // still matches without short abbreviations (e.g. "hr", "hb") causing
+      // false positives inside unrelated column names.
+      if (!map[key]) {
+        var longAliases = def.aliases.filter(function (a) { return a.length >= 5; });
+        for (var j = 0; j < normed.length; j++) {
+          var hit = longAliases.some(function (a) { return normed[j].indexOf(a) !== -1; });
+          if (hit) { map[key] = headers[j]; break; }
+        }
+      }
+    });
+    var sexCol = null, dateCol = null, idCol = null;
+    headers.forEach(function (h, i) {
+      var n = normed[i];
+      if (!sexCol && (n === "sex" || n === "gender")) sexCol = h;
+      if (!dateCol && n.indexOf("date") !== -1) dateCol = h;
+      if (!idCol && (n.indexOf("id") !== -1 || n.indexOf("patient") !== -1)) idCol = h;
+    });
+    return { fields: map, sexCol: sexCol, dateCol: dateCol, idCol: idCol };
+  }
+
+  function toNumber(raw) {
+    if (raw === undefined || raw === null) return NaN;
+    var s = String(raw).trim().replace(/,/g, "");
+    if (s === "") return NaN;
+    return Number(s);
+  }
+
+  function parseDateLoose(raw) {
+    var s = String(raw || "").trim();
+    if (!s) return null;
+    var iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (iso) return { y: +iso[1], m: +iso[2], d: +iso[3], fmt: "ISO" };
+    var slash = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (slash) {
+      var a = +slash[1], b = +slash[2];
+      if (a > 12) return { y: +slash[3], m: b, d: a, fmt: "D/M/Y" };
+      if (b > 12) return { y: +slash[3], m: a, d: b, fmt: "M/D/Y" };
+      return { y: +slash[3], m: a, d: b, fmt: "ambiguous D/M/Y or M/D/Y" };
+    }
+    return { raw: s, fmt: "unrecognized" };
+  }
+
+  function isoOf(dt) {
+    if (!dt || !dt.y) return null;
+    return dt.y + "-" + String(dt.m).padStart(2, "0") + "-" + String(dt.d).padStart(2, "0");
+  }
+
+  function analyze(rows, headers) {
+    var matched = matchFields(headers);
+    var issues = [];
+    var seenRows = {};
+    var duplicateRowIdx = [];
+    var missingCounts = {};
+    var dateFormatsSeen = {};
+    var cleaned = [];
+
+    rows.forEach(function (row, idx) {
+      var rowNum = idx + 2; // header is row 1
+      var key = JSON.stringify(row);
+      if (seenRows[key]) {
+        duplicateRowIdx.push(rowNum);
+        issues.push({ row: rowNum, field: "(entire row)", value: "—", severity: "warning", why: "Exact duplicate of row " + seenRows[key] + " — same values across every column." });
+      } else {
+        seenRows[key] = rowNum;
+      }
+
+      var cleanedRow = {};
+      headers.forEach(function (h) {
+        var v = row[h];
+        if (v === undefined || v === null || String(v).trim() === "") {
+          missingCounts[h] = (missingCounts[h] || 0) + 1;
+          cleanedRow[h] = "";
+        } else {
+          cleanedRow[h] = String(v).trim();
+        }
+      });
+
+      if (matched.sexCol) {
+        var raw = String(row[matched.sexCol] || "").trim().toLowerCase();
+        var mapped = SEX_MAP[raw];
+        if (raw && !mapped) {
+          issues.push({ row: rowNum, field: matched.sexCol, value: row[matched.sexCol], severity: "warning", why: "Unrecognized value for sex/gender — expected something mappable to M or F." });
+        }
+        cleanedRow[matched.sexCol] = mapped || cleanedRow[matched.sexCol];
+      }
+
+      if (matched.dateCol) {
+        var parsed = parseDateLoose(row[matched.dateCol]);
+        if (parsed) {
+          if (parsed.fmt === "unrecognized") {
+            issues.push({ row: rowNum, field: matched.dateCol, value: row[matched.dateCol], severity: "warning", why: "Date format not recognized — left as-is in cleaned output." });
+          } else {
+            dateFormatsSeen[parsed.fmt] = (dateFormatsSeen[parsed.fmt] || 0) + 1;
+            var iso = isoOf(parsed);
+            if (iso) cleanedRow[matched.dateCol] = iso;
+            if (parsed.fmt === "ambiguous D/M/Y or M/D/Y") {
+              issues.push({ row: rowNum, field: matched.dateCol, value: row[matched.dateCol], severity: "info", why: "Both day and month are ≤ 12 — format is ambiguous without a column-wide convention; assumed D/M/Y." });
+            }
+          }
+        }
+      }
+
+      Object.keys(matched.fields).forEach(function (key) {
+        var col = matched.fields[key];
+        var raw2 = row[col];
+        if (raw2 === undefined || String(raw2).trim() === "") return;
+        var num = toNumber(raw2);
+        if (isNaN(num)) {
+          issues.push({ row: rowNum, field: col, value: raw2, severity: "warning", why: "Non-numeric value in a numeric field." });
+          return;
+        }
+        cleanedRow[col] = num;
+        var result = FIELD_DEFS[key].check(num);
+        if (result) {
+          issues.push({ row: rowNum, field: col, value: num, severity: result.severity, why: result.why });
+        }
+      });
+
+      cleaned.push(cleanedRow);
+    });
+
+    Object.keys(missingCounts).forEach(function (h) {
+      issues.push({ row: "—", field: h, value: missingCounts[h] + " blank cell(s)", severity: "info", why: "Missing values in this column across the file." });
+    });
+
+    if (Object.keys(dateFormatsSeen).length > 1) {
+      issues.push({ row: "—", field: matched.dateCol, value: Object.keys(dateFormatsSeen).join(", "), severity: "warning", why: "Multiple date formats used within the same column — standardized to ISO (YYYY-MM-DD) in the cleaned output where unambiguous." });
+    }
+
+    var severityOrder = { critical: 0, serious: 1, warning: 2, info: 3 };
+    issues.sort(function (a, b) { return severityOrder[a.severity] - severityOrder[b.severity]; });
+
+    return { issues: issues, cleaned: cleaned, matchedFields: matched };
+  }
+
+  function fmtVal(v) {
+    if (typeof v === "number") return (Math.round(v * 1000) / 1000).toLocaleString();
+    return String(v);
+  }
+
+  function render(headers, result, rowCount) {
+    var tiles = document.getElementById("tiles");
+    var critical = result.issues.filter(function (i) { return i.severity === "critical"; }).length;
+    var serious = result.issues.filter(function (i) { return i.severity === "serious"; }).length;
+    var warning = result.issues.filter(function (i) { return i.severity === "warning"; }).length;
+    var info = result.issues.filter(function (i) { return i.severity === "info"; }).length;
+    var scoreBase = rowCount || 1;
+    var score = Math.max(0, Math.round(100 - ((critical * 6 + serious * 3 + warning * 1.5) / scoreBase) * 10) / 1);
+    score = Math.min(100, score);
+
+    tiles.innerHTML = "";
+    var tileDefs = [
+      { num: rowCount, label: "Rows analyzed", cls: "accent" },
+      { num: critical, label: "Critical (implausible)", cls: "critical" },
+      { num: serious, label: "Likely unit errors", cls: "warning" },
+      { num: warning + info, label: "Formatting notes", cls: "" },
+      { num: score + "%", label: "Data quality score", cls: score >= 90 ? "good" : (score >= 70 ? "warning" : "critical") }
+    ];
+    tileDefs.forEach(function (t) {
+      var div = document.createElement("div");
+      div.className = "tile " + t.cls;
+      div.innerHTML = '<div class="num">' + t.num + '</div><div class="label">' + t.label + '</div>';
+      tiles.appendChild(div);
+    });
+
+    var tbody = document.querySelector("#issuesTable tbody");
+    tbody.innerHTML = "";
+    if (result.issues.length === 0) {
+      var tr0 = document.createElement("tr");
+      tr0.innerHTML = '<td colspan="5" style="color:var(--muted);">No issues found — every checked value fell within a physiologically plausible range.</td>';
+      tbody.appendChild(tr0);
+    }
+    result.issues.forEach(function (issue) {
+      var tr = document.createElement("tr");
+      var label = { critical: "Critical", serious: "Likely error", warning: "Check", info: "Info" }[issue.severity] || issue.severity;
+      tr.innerHTML =
+        '<td class="mono">' + issue.row + '</td>' +
+        '<td>' + issue.field + '</td>' +
+        '<td class="mono">' + fmtVal(issue.value) + '</td>' +
+        '<td><span class="chip ' + issue.severity + '">' + label + '</span></td>' +
+        '<td>' + issue.why + '</td>';
+      tbody.appendChild(tr);
+    });
+
+    var cleanHead = document.querySelector("#cleanTable thead");
+    var cleanBody = document.querySelector("#cleanTable tbody");
+    cleanHead.innerHTML = "<tr>" + headers.map(function (h) { return "<th>" + h + "</th>"; }).join("") + "</tr>";
+    cleanBody.innerHTML = result.cleaned.slice(0, 8).map(function (row) {
+      return "<tr>" + headers.map(function (h) { return '<td class="mono">' + (row[h] === undefined ? "" : row[h]) + "</td>"; }).join("") + "</tr>";
+    }).join("");
+    document.getElementById("cleanNote").textContent = "Showing first " + Math.min(8, result.cleaned.length) + " of " + result.cleaned.length + " cleaned rows. Sex/gender standardized to M/F, dates standardized to ISO where unambiguous, numeric fields coerced to numbers.";
+
+    var refGrid = document.getElementById("refGrid");
+    refGrid.innerHTML = "";
+    Object.keys(result.matchedFields.fields).forEach(function (key) {
+      var col = result.matchedFields.fields[key];
+      var def = FIELD_DEFS[key];
+      var d = document.createElement("div");
+      d.innerHTML = '<div class="field">' + col + '</div><div>' + def.normalNote + '</div>';
+      refGrid.appendChild(d);
+    });
+    if (Object.keys(result.matchedFields.fields).length === 0) {
+      refGrid.innerHTML = '<div>No recognized clinical fields matched in this file\'s headers — only generic cleaning (duplicates, blanks, formatting) was run.</div>';
+    }
+
+    window._labguardCleaned = { headers: headers, rows: result.cleaned };
+    document.getElementById("emptyState").hidden = true;
+    document.getElementById("resultsBody").hidden = false;
+  }
+
+  function runOnCsvText(text) {
+    var parsed = parseCSV(text.trim());
+    var headers = parsed.fields || [];
+    var rows = parsed.data || [];
+    if (!headers.length || !rows.length) return;
+    var result = analyze(rows, headers);
+    render(headers, result, rows.length);
+  }
+
+  var SAMPLE = [
+    "patient_id,age,sex,glucose_mg_dl,hemoglobin_g_dl,systolic_bp,diastolic_bp,heart_rate,temp_c,test_date",
+    "P001,54,Male,92,14.1,118,76,72,36.8,2026-03-01",
+    "P002,61, female ,148,12.8,132,84,88,37.0,03/02/2026",
+    "P003,39,M,101,15.0,122,78,76,36.9,2026-03-02",
+    "P004,72,F,5.6,11.4,146,92,94,37.1,04-03-2026",
+    "P005,45,Male,88,13.9,118,74,70,36.7,2026-03-04",
+    "P005,45,Male,88,13.9,118,74,70,36.7,2026-03-04",
+    "P006,-3,Female,96,12.1,124,80,82,36.9,2026-03-05",
+    "P007,29,male,110,45,128,82,78,37.0,2026-03-05",
+    "P008,67,F,132,13.2,118,76,74,98.4,2026-03-06",
+    "P009,50,M,95,14.4,,78,72,36.8,2026-03-06",
+    "P010,58,Female,102,13.6,12,74,68,36.9,2026-03-07"
+  ].join("\n");
+
+  document.getElementById("sampleBtn").addEventListener("click", function () {
+    document.getElementById("csvInput").value = SAMPLE;
+  });
+
+  document.getElementById("analyzeBtn").addEventListener("click", function () {
+    var text = document.getElementById("csvInput").value;
+    if (text && text.trim()) runOnCsvText(text);
+  });
+
+  document.getElementById("fileInput").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      document.getElementById("csvInput").value = ev.target.result;
+      runOnCsvText(ev.target.result);
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var data = window._labguardCleaned;
+    if (!data) return;
+    var csv = toCSV(data.headers, data.rows);
+    var done = function () {
+      var flash = document.getElementById("copyFlash");
+      flash.hidden = false;
+      setTimeout(function () { flash.hidden = true; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(csv).then(done).catch(function () {
+        try {
+          var ta = document.getElementById("csvInput");
+          var old = ta.value; ta.value = csv; ta.select(); document.execCommand("copy"); ta.value = old;
+          done();
+        } catch (e) {}
+      });
+    }
+  });
+})();
+</script>
